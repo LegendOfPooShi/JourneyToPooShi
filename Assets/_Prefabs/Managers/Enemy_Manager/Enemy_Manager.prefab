@@ -1,0 +1,70 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &4106014455247109968
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4106014455247109969}
+  - component: {fileID: 4106014455247109970}
+  m_Layer: 0
+  m_Name: Enemy_Manager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4106014455247109969
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4106014455247109968}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &4106014455247109970
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4106014455247109968}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 55c21d015b0178f4c90666559cbb855d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  car: {fileID: 0}
+  enemyGroups:
+  - name: Bouncy Spike Bombs
+    enemyPrefab: {fileID: 8716518911905122966, guid: 39dede17458c5cb459ab61b9a6502e76, type: 3}
+    totalEnemies: 24
+    inGameEnemies: []
+    inGameRBEnemies: []
+    nextUpEnemyID: 0
+  - name: King Bald Eagle
+    enemyPrefab: {fileID: 0}
+    totalEnemies: 1
+    inGameEnemies:
+    - {fileID: 0}
+    inGameRBEnemies: []
+    nextUpEnemyID: 0
+  - name: Token
+    enemyPrefab: {fileID: 4725077276304415061, guid: eae69e43549a6584d8039ea2193bf1b9, type: 3}
+    totalEnemies: 200
+    inGameEnemies:
+    - {fileID: 0}
+    inGameRBEnemies: []
+    nextUpEnemyID: 0
+  enemySpawnRateSeconds: 3.2
+  startingEnemyXOffsetLocationRange: {x: 24, y: 52}
+  startingEnemyYOffsetLocationRange: {x: 2, y: 11}

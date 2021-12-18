@@ -1,0 +1,58 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!78 &1
+TagManager:
+  serializedVersion: 2
+  tags: []
+  layers:
+  - Default
+  - TransparentFX
+  - Ignore Raycast
+  - 
+  - Water
+  - UI
+  - Car
+  - Enemy
+  - Token
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  m_SortingLayers:
+  - name: Default
+    uniqueID: 0
+    locked: 0
+  - name: Background
+    uniqueID: 4151028255
+    locked: 0
+  - name: Characters
+    uniqueID: 1601895817
+    locked: 0
+  - name: Enemies
+    uniqueID: 2851813155
+    locked: 0
+  - name: Car
+    uniqueID: 21618197
+    locked: 0
+  - name: Foreground
+    uniqueID: 1815802655
+    locked: 0
