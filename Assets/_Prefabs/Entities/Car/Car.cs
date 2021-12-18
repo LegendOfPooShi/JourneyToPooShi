@@ -55,6 +55,9 @@ public class Car : MonoBehaviour
     [SerializeField]
     private AudioSource carJumpedAudioSource = null;
 
+    [SerializeField]
+    private float swipeDistanceToMove = 0.24f;
+
     private float currentJumpSeconds = 0.0f;
 
     private Vector3 currentTargetCarPosition = Vector3.zero;
@@ -68,6 +71,11 @@ public class Car : MonoBehaviour
     private bool isCarJumping = false;
     private float currentSecondsAllowForInput = 0.0f;
     private bool canUserControlCar = false;
+
+    private Vector2 fingerDown = Vector2.zero;
+    private Vector2 fingerUp = Vector2.zero;
+    public bool detectSwipeOnlyAfterRelease = false;
+    public float swipeThershold = 7f;
 
     public bool CanUserControlCar
     {
@@ -151,6 +159,13 @@ public class Car : MonoBehaviour
     {
         canUserControlCar = false;
         carAnimator.enabled = false;
+    }
+
+    private void Awake()
+    {
+#if UNITY_ANDROID
+        carMoveSpeed *= 0.5f;
+#endif
     }
 
     private void OnEnable()
@@ -270,6 +285,114 @@ public class Car : MonoBehaviour
             currentCarLaneIndex = Mathf.Clamp(currentCarLaneIndex, 0, possibleCarLaneHeights.Length - 1);
             SetCarLane(possibleCarLaneHeights[currentCarLaneIndex]);
         }
+
+        if (Input.touchCount <= 0)
+        {
+            return;
+        }
+
+        foreach (Touch touch in Input.touches)
+        {
+            if (touch.tapCount >= 2)
+            {
+                if (isCarJumping == false)
+                {
+                    MakeCarJump();
+                    continue;
+                }
+            }
+
+            if (touch.phase == TouchPhase.Began)
+            {
+                fingerUp = touch.position;
+                fingerDown = touch.position;
+            }
+
+            if (touch.phase == TouchPhase.Moved)
+            {
+                if (!detectSwipeOnlyAfterRelease)
+                {
+                    fingerDown = touch.position;
+                    checkSwipe();
+                }
+            }
+
+            if (touch.phase == TouchPhase.Ended)
+            {
+                fingerDown = touch.position;
+                checkSwipe();
+            }
+        }
+    }
+
+    private void checkSwipe()
+    {
+        if ((verticalMove() > swipeThershold) && (verticalMove() > horizontalValMove()))
+        {
+            if (fingerDown.y - fingerUp.y > 0)
+            {
+                OnSwipeUp();
+            }
+            else if (fingerDown.y - fingerUp.y < 0)
+            {
+                OnSwipeDown();
+            }
+
+            fingerUp = fingerDown;
+        }
+        else if ((horizontalValMove() > swipeThershold) && (horizontalValMove() > verticalMove()))
+        {
+            if (fingerDown.x - fingerUp.x > 0)
+            {
+                OnSwipeRight();
+            }
+            else if (fingerDown.x - fingerUp.x < 0)
+            {
+                OnSwipeLeft();
+            }
+
+            fingerUp = fingerDown;
+        }
+    }
+
+    private void OnSwipeUp()
+    {
+        currentCarLaneIndex--;
+        currentCarLaneIndex = Mathf.Clamp(currentCarLaneIndex, 0, possibleCarLaneHeights.Length - 1);
+        SetCarLane(possibleCarLaneHeights[currentCarLaneIndex]);
+    }
+
+    private void OnSwipeDown()
+    {
+        currentCarLaneIndex++;
+        currentCarLaneIndex = Mathf.Clamp(currentCarLaneIndex, 0, possibleCarLaneHeights.Length - 1);
+        SetCarLane(possibleCarLaneHeights[currentCarLaneIndex]);
+    }
+
+    private void OnSwipeLeft()
+    {
+        currentCarLocationIndex--;
+        currentCarLocationIndex = Mathf.Clamp(currentCarLocationIndex, 0, possibleCarLocations.Length - 1);
+        SetCarLocation(possibleCarLocations[currentCarLocationIndex]);
+        SetCarLane(possibleCarLaneHeights[currentCarLaneIndex]);
+    }
+
+    private void OnSwipeRight()
+    {
+        currentCarLocationIndex++;
+        currentCarLocationIndex = Mathf.Clamp(currentCarLocationIndex, 0, possibleCarLocations.Length - 1);
+        SetCarLocation(possibleCarLocations[currentCarLocationIndex]);
+        SetCarLane(possibleCarLaneHeights[currentCarLaneIndex]);
+    }
+
+    private float verticalMove()
+    {
+        return Mathf.Abs(fingerDown.y - fingerUp.y);
+    }
+
+    private float horizontalValMove()
+    {
+        return Mathf.Abs(fingerDown.x - fingerUp.x);
     }
 
     private void CheckForCarJumping()
@@ -304,10 +427,15 @@ public class Car : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Space) == true)
         {
-            carAnimator.SetTrigger("Jump");
-            isCarJumping = true;
-            secondsSinceCarJumped = 0.0f;
-            carJumpedAudioSource.Play();
+            MakeCarJump();
         }
+    }
+
+    private void MakeCarJump()
+    {
+        carAnimator.SetTrigger("Jump");
+        isCarJumping = true;
+        secondsSinceCarJumped = 0.0f;
+        carJumpedAudioSource.Play();
     }
 }

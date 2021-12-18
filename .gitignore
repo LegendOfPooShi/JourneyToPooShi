@@ -58,3 +58,9 @@ sysinfo.txt
 # Crashlytics generated file
 crashlytics-build.properties
 
+
+.vsconfig
+
+UserSettings/AndroidLogcatSettings.asset
+
+UserSettings/EditorUserSettings.asset
