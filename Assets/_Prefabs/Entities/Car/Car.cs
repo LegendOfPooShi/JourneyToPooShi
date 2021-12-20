@@ -2,6 +2,8 @@ using UnityEngine;
 
 public class Car : MonoBehaviour
 {
+    private enum MoveDirection { NULL, LEFT, RIGHT } 
+
     [SerializeField]
     private Vector3 carStartingPosition = Vector3.zero;
 
@@ -55,6 +57,11 @@ public class Car : MonoBehaviour
     [SerializeField]
     private AudioSource carJumpedAudioSource = null;
 
+    [SerializeField]
+    private bool detectSwipeOnlyAfterRelease = false;
+    [SerializeField]
+    private float swipeThershold = 7f;
+
     private float currentJumpSeconds = 0.0f;
 
     private Vector3 currentTargetCarPosition = Vector3.zero;
@@ -68,6 +75,10 @@ public class Car : MonoBehaviour
     private bool isCarJumping = false;
     private float currentSecondsAllowForInput = 0.0f;
     private bool canUserControlCar = false;
+
+    private Vector2 fingerDown = Vector2.zero;
+    private Vector2 fingerUp = Vector2.zero;
+    private MoveDirection isMoveButtonDown = MoveDirection.NULL;
 
     public bool CanUserControlCar
     {
@@ -117,6 +128,34 @@ public class Car : MonoBehaviour
         }
     }
 
+    public void MakeCarJump()
+    {
+        if (isCarJumping == true)
+        {
+            return;
+        }
+        
+        carAnimator.SetTrigger("Jump");
+        isCarJumping = true;
+        secondsSinceCarJumped = 0.0f;
+        carJumpedAudioSource.Play();
+    }
+
+    public void UserPressedLeftMoveButton()
+    {
+        isMoveButtonDown = MoveDirection.LEFT;
+    }
+
+    public void UserPressedRightMoveButton()
+    {
+        isMoveButtonDown = MoveDirection.RIGHT;
+    }
+
+    public void UserReleasedMoveButton()
+    {
+        isMoveButtonDown = MoveDirection.NULL;
+    }
+
     public void SetCarLocation(Vector3 newLocation)
     {
         currentTargetCarPosition = newLocation;
@@ -153,6 +192,14 @@ public class Car : MonoBehaviour
         carAnimator.enabled = false;
     }
 
+    private void Awake()
+    {
+#if UNITY_ANDROID
+        carMoveSpeed *= 0.64f;
+        jumpSpeed *= 0.9f;
+#endif
+    }
+
     private void OnEnable()
     {
         carShadow.gameObject.SetActive(true);
@@ -161,6 +208,7 @@ public class Car : MonoBehaviour
         frontBodySpriteRenderer.enabled = true;
         isCarJumping = false;
         isInBossMode = false;
+        isMoveButtonDown = 0;
         currentJumpSeconds = 0.0f;
         secondsTraveled = 0.0f;
         currentPlayerScore = 0.0f;
@@ -233,6 +281,46 @@ public class Car : MonoBehaviour
 
     private void CheckForCarLocationShift()
     {
+        //for (int i = 0; i > Input.touchCount; i++)
+        //{
+        //    Touch touch = Input.GetTouch(i);
+
+        //    if (touch.tapCount >= 2)
+        //    {
+        //        if (isCarJumping == false)
+        //        {
+        //            MakeCarJump();
+        //            continue;
+        //        }
+        //    }
+
+        //    if (touch.phase == TouchPhase.Began)
+        //    {
+        //        fingerUp = touch.position;
+        //        fingerDown = touch.position;
+        //    }
+        //    else if (touch.phase == TouchPhase.Moved)
+        //    {
+        //        if (detectSwipeOnlyAfterRelease == false)
+        //        {
+        //            fingerDown = touch.position;
+        //            CheckSwipe();
+        //        }
+        //    }
+        //    else if (touch.phase == TouchPhase.Stationary)
+        //    {
+        //        if (detectSwipeOnlyAfterRelease == false)
+        //        {
+        //            CheckSwipe();
+        //        }
+        //    }
+        //    else if ((touch.phase == TouchPhase.Ended) || (touch.phase == TouchPhase.Canceled))
+        //    {
+        //        fingerDown = touch.position;
+        //        CheckSwipe();
+        //    }
+        //}
+
         currentSecondsAllowForInput += Time.deltaTime;
         if (currentSecondsAllowForInput < timeToCheckForInput)
         {
@@ -241,15 +329,16 @@ public class Car : MonoBehaviour
 
         currentSecondsAllowForInput = 0.0f;
 
-        if ((Input.GetKey(KeyCode.A) == true) || (Input.GetKey(KeyCode.LeftArrow) == true))
+        if ((Input.GetKey(KeyCode.A) == true) || (Input.GetKey(KeyCode.LeftArrow) == true) 
+            || (isMoveButtonDown == MoveDirection.LEFT))
         {
             currentCarLocationIndex--;
             currentCarLocationIndex = Mathf.Clamp(currentCarLocationIndex, 0, possibleCarLocations.Length - 1);
             SetCarLocation(possibleCarLocations[currentCarLocationIndex]);
             SetCarLane(possibleCarLaneHeights[currentCarLaneIndex]);
         }
-
-        if ((Input.GetKey(KeyCode.D) == true) || (Input.GetKey(KeyCode.RightArrow) == true))
+        else if ((Input.GetKey(KeyCode.D) == true) || (Input.GetKey(KeyCode.RightArrow) == true) 
+            || (isMoveButtonDown == MoveDirection.RIGHT))
         {
             currentCarLocationIndex++;
             currentCarLocationIndex = Mathf.Clamp(currentCarLocationIndex, 0, possibleCarLocations.Length - 1);
@@ -263,13 +352,82 @@ public class Car : MonoBehaviour
             currentCarLaneIndex = Mathf.Clamp(currentCarLaneIndex, 0, possibleCarLaneHeights.Length - 1);
             SetCarLane(possibleCarLaneHeights[currentCarLaneIndex]);
         }
-
-        if ((Input.GetKey(KeyCode.S) == true) || (Input.GetKey(KeyCode.DownArrow) == true))
+        else if ((Input.GetKey(KeyCode.S) == true) || (Input.GetKey(KeyCode.DownArrow) == true))
         {
             currentCarLaneIndex++;
             currentCarLaneIndex = Mathf.Clamp(currentCarLaneIndex, 0, possibleCarLaneHeights.Length - 1);
             SetCarLane(possibleCarLaneHeights[currentCarLaneIndex]);
         }
+    }
+
+    private void CheckSwipe()
+    {
+        if ((VerticalMove() >= swipeThershold) && (VerticalMove() > HorizontalValMove()))
+        {
+            if (fingerDown.y - fingerUp.y > 0)
+            {
+                OnSwipeUp();
+            }
+            else if (fingerDown.y - fingerUp.y < 0)
+            {
+                OnSwipeDown();
+            }
+
+            fingerUp = fingerDown;
+        }
+        else if ((HorizontalValMove() >= swipeThershold) && (HorizontalValMove() > VerticalMove()))
+        {
+            if (fingerDown.x - fingerUp.x > 0)
+            {
+                OnSwipeRight();
+            }
+            else if (fingerDown.x - fingerUp.x < 0)
+            {
+                OnSwipeLeft();
+            }
+
+            fingerUp = fingerDown;
+        }
+    }
+
+    public void OnSwipeUp()
+    {
+        currentCarLaneIndex--;
+        currentCarLaneIndex = Mathf.Clamp(currentCarLaneIndex, 0, possibleCarLaneHeights.Length - 1);
+        SetCarLane(possibleCarLaneHeights[currentCarLaneIndex]);
+    }
+
+    public void OnSwipeDown()
+    {
+        currentCarLaneIndex++;
+        currentCarLaneIndex = Mathf.Clamp(currentCarLaneIndex, 0, possibleCarLaneHeights.Length - 1);
+        SetCarLane(possibleCarLaneHeights[currentCarLaneIndex]);
+    }
+
+    public void OnSwipeLeft()
+    {
+        currentCarLocationIndex--;
+        currentCarLocationIndex = Mathf.Clamp(currentCarLocationIndex, 0, possibleCarLocations.Length - 1);
+        SetCarLocation(possibleCarLocations[currentCarLocationIndex]);
+        SetCarLane(possibleCarLaneHeights[currentCarLaneIndex]);
+    }
+
+    public void OnSwipeRight()
+    {
+        currentCarLocationIndex++;
+        currentCarLocationIndex = Mathf.Clamp(currentCarLocationIndex, 0, possibleCarLocations.Length - 1);
+        SetCarLocation(possibleCarLocations[currentCarLocationIndex]);
+        SetCarLane(possibleCarLaneHeights[currentCarLaneIndex]);
+    }
+
+    private float VerticalMove()
+    {
+        return Mathf.Abs(fingerDown.y - fingerUp.y);
+    }
+
+    private float HorizontalValMove()
+    {
+        return Mathf.Abs(fingerDown.x - fingerUp.x);
     }
 
     private void CheckForCarJumping()
@@ -304,10 +462,7 @@ public class Car : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Space) == true)
         {
-            carAnimator.SetTrigger("Jump");
-            isCarJumping = true;
-            secondsSinceCarJumped = 0.0f;
-            carJumpedAudioSource.Play();
+            MakeCarJump();
         }
     }
 }

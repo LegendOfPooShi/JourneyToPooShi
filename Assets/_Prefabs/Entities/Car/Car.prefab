@@ -499,7 +499,7 @@ MonoBehaviour:
   carShadowOffset: {x: -0.03, y: -7, z: 0}
   timeToCheckForInput: 0.1
   carMoveSpeed: 1
-  jumpSpeed: 13
+  jumpSpeed: 10
   totalJumpSeconds: 1.24
   frontBodySpriteRenderer: {fileID: 1900368614836421925}
   TimeInBeenHitModeSeconds: 3
@@ -510,6 +510,8 @@ MonoBehaviour:
   carHitTokenAudioSource: {fileID: 0}
   carHitEnemyAudioSource: {fileID: 0}
   carJumpedAudioSource: {fileID: 0}
+  detectSwipeOnlyAfterRelease: 0
+  swipeThershold: 10
 --- !u!95 &1286598164
 Animator:
   serializedVersion: 3
