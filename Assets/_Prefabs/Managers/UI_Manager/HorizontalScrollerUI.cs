@@ -47,6 +47,11 @@ public class HorizontalScrollerUI : MonoBehaviour
     [SerializeField]
     private GameObject gameHelpMessageMobile = null;
 
+    [SerializeField]
+    private GameObject moveButtonUIContainer = null;
+    [SerializeField]
+    private GameObject jumpButtonUIContainer = null;
+
     private bool isGamePaused = false;
     private float currentHighScore = 0;
 
@@ -63,11 +68,10 @@ public class HorizontalScrollerUI : MonoBehaviour
         playButton.gameObject.SetActive(true);
         highScoreText.transform.parent.gameObject.SetActive(true);
 
-#if UNITY_ANDROID
-        gameHelpMessageMobile.SetActive(true);
-#else
         gameHelpMessageStandalone.SetActive(true);
-#endif
+
+        moveButtonUIContainer.gameObject.SetActive(false);
+        jumpButtonUIContainer.gameObject.SetActive(false);
 
         car.PauseTires();
     }
@@ -86,10 +90,14 @@ public class HorizontalScrollerUI : MonoBehaviour
         car.gameObject.SetActive(true);
         highScoreText.transform.parent.gameObject.SetActive(false);
 
-#if UNITY_ANDROID
-        gameHelpMessageMobile.SetActive(false);
-#else
         gameHelpMessageStandalone.SetActive(false);
+
+#if UNITY_WEBGL|| UNITY_ANDROID
+        moveButtonUIContainer.gameObject.SetActive(true);
+        jumpButtonUIContainer.gameObject.SetActive(true);
+#else
+        moveButtonUIContainer.gameObject.SetActive(false);
+        jumpButtonUIContainer.gameObject.SetActive(false);
 #endif
 
         Camera.main.transform.position = new Vector3(0.0f, 0.0f, -10f);
@@ -103,11 +111,12 @@ public class HorizontalScrollerUI : MonoBehaviour
         gamePausedMessage.SetActive(isGamePaused);
         highScoreText.transform.parent.gameObject.SetActive(isGamePaused);
 
-#if UNITY_ANDROID
-        gameHelpMessageMobile.SetActive(isGamePaused);
-#else
-        gameHelpMessageStandalone.SetActive(isGamePaused);
+#if UNITY_WEBGL || UNITY_ANDROID
+        moveButtonUIContainer.gameObject.SetActive(!isGamePaused);
+        jumpButtonUIContainer.gameObject.SetActive(!isGamePaused);
 #endif
+
+        gameHelpMessageStandalone.SetActive(isGamePaused);
 
         if (isGamePaused == false)
         {
@@ -173,13 +182,10 @@ public class HorizontalScrollerUI : MonoBehaviour
         userLostMessage.SetActive(false);
         highScoreText.transform.parent.gameObject.SetActive(true);
 
-#if UNITY_ANDROID
-        gameHelpMessageMobile.SetActive(true);
-        gameHelpMessageStandalone.SetActive(false);
-#else
         gameHelpMessageStandalone.SetActive(true);
-        gameHelpMessageMobile.SetActive(false);
-#endif
+
+        moveButtonUIContainer.gameObject.SetActive(false);
+        jumpButtonUIContainer.gameObject.SetActive(false);
 
         gamePausedMessage.SetActive(false);
         playButton.gameObject.SetActive(true);
@@ -224,12 +230,11 @@ public class HorizontalScrollerUI : MonoBehaviour
         enemyManager.DeactivateBombTokenSpawner();
         enemyManager.DeactivateTheBoss();
         highScoreText.transform.parent.gameObject.SetActive(true);
-#if UNITY_ANDROID
-        gameHelpMessageMobile.SetActive(true);
-#else
-        gameHelpMessageStandalone.SetActive(true);
-#endif
 
+        gameHelpMessageStandalone.SetActive(true);
+
+        moveButtonUIContainer.gameObject.SetActive(false);
+        jumpButtonUIContainer.gameObject.SetActive(false);
 
         userLostMessage.SetActive(true);
     }
